@@ -8,8 +8,9 @@ from gazebo_msgs.msg import ModelStates
 from std_msgs.msg import Float64MultiArray
 from rosgraph_msgs.msg import Clock
 import rosbag
-bag = rosbag.Bag('optimal_random_move.bag', 'w')
+bag = rosbag.Bag('optimal_random.bag', 'w')
 
+msgs = None
 P1,P2,P3,Pc,Pr,Pb,measurement,thetac = None,None,None,None,None,None,None,None
 fx,fy,Cu,Cv = 565.6,565.6,320.0,240.0
 time_last = 0
@@ -105,7 +106,8 @@ def measurement_model(x_in, data):
     return ret
 
 def odom(msg):
-    global P1,P2,P3,Pc,Pr,Pb
+    global P1,P2,P3,Pc,Pr,Pb,msgs
+    msgs = msg
     UAV1_index = msg.name.index('iris_camera')
     UAV2_index = msg.name.index('iris_ranging')
     UAV3_index = msg.name.index('iris_bearing')
@@ -152,13 +154,16 @@ if __name__ == "__main__":
         # pass all the parameters into the UKF!
         # number of state variables, process noise, initial state, initial coariance, three tuning paramters, and the iterate function
         state_estimator = UKF(18, q, ini, 0.01*np.eye(18), 0.001, 0.0, 2.0, iterate_x,measurement_model)
-        rate = rospy.Rate(40)
+        rospy.Subscriber('/gazebo/model_states', ModelStates, odom, queue_size=10)
+        thetac_sub = rospy.Subscriber("/theta_iris_camera", Float64MultiArray, theta_update, queue_size=10)
+        while thetac == None:
+            pass
+        rate = rospy.Rate(50)
         while not rospy.is_shutdown():
-            msg = rospy.wait_for_message('/gazebo/model_states', ModelStates)
-            odom(msg)
-            thetac_sub = rospy.Subscriber("/theta_iris_camera", Float64MultiArray, theta_update, queue_size=10)
-            while thetac == None:
-                pass
+            '''
+            msgs = rospy.wait_for_message('/gazebo/model_states', ModelStates)
+            odom(msgs)
+            '''
             state = np.array([P1[0],P1[1],P1[2],0,0,0,P2[0],P2[1],P2[2],0,0,0,P3[0],P3[1],P3[2],0,0,0])
             uav_state = np.array([Pc[0],Pc[1],Pc[2],Pr[0],Pr[1],Pr[2],Pb[0],Pb[1],Pb[2],thetac])
             add_measurementnoise()
@@ -175,7 +180,7 @@ if __name__ == "__main__":
             print(det_covariance.data)
             print('--')
             bag.write('det_covariance', det_covariance)
-            bag.write('/gazebo/model_states', msg)
+            bag.write('/gazebo/model_states', msgs)
             bag.write('/clock', clock)
 #            break
             rate.sleep()

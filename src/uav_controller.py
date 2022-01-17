@@ -18,7 +18,8 @@ fx,fy,lx,ly = 0.1496485702,0.1496485702,0.1693333333,0.127
 #fx,fy,lx,ly = 565.6,565.6,640,480
 #sigma_u,sigma_v,sigma_ranging,sigma_bearing = 0.007,0.007,0.01,0.01
 sigma_u,sigma_v,sigma_ranging,sigma_bearing = 1,1,1,1
-x_fov_wealth = 3*pi/180
+x_fov_wealth = 8*pi/180
+y_fov_wealth = 5*pi/180
 height_l = 0.5
 height_u = 100
 d_safe_car = 3
@@ -28,16 +29,16 @@ d_communication = 20
 gamma = 1.0
 
 def object_fun(x):
-        return 1/( sigma_u**2*sigma_v**2*((P1[0] - (Pb[0] + x[6]))*(P1[0] - (Pr[0] + x[3])) + (P1[1] - (Pb[1] + x[7]))*(P1[1] - (Pr[1] + x[4])))**2/(((P1[0] - (Pb[0] + x[6]))**2 + (P1[1] - (Pb[1] + x[7]))**2)**2*((P1[0] - (Pr[0] + x[3]))**2 + (P1[1] - (Pr[1] + x[4]))**2)) \
+        return ( sigma_u**2*sigma_v**2*((P1[0] - (Pb[0] + x[6]))*(P1[0] - (Pr[0] + x[3])) + (P1[1] - (Pb[1] + x[7]))*(P1[1] - (Pr[1] + x[4])))**2/(((P1[0] - (Pb[0] + x[6]))**2 + (P1[1] - (Pb[1] + x[7]))**2)**2*((P1[0] - (Pr[0] + x[3]))**2 + (P1[1] - (Pr[1] + x[4]))**2)) \
                   + sigma_bearing**2*(sigma_v**2*fx**2*((P1[0] - (Pr[0] + x[3]))*(P1[0] - (Pc[0] + x[0])) + (P1[1] - (Pr[1] + x[4]))*(P1[1] - (Pc[1] + x[1])))**2 + sigma_u**2*fy**2*(P1[2] - (Pc[2] + x[2]))**2*((P1[1] - (Pr[1] + x[4]))*cos(thetac + x[9]) - (P1[0] - (Pr[0] + x[3]))*sin(thetac + x[9]))**2)/((cos(thetac + x[9])*(P1[0] - (Pc[0] + x[0])) + sin(thetac + x[9])*(P1[1] - (Pc[1] + x[1])))**4*((P1[0] - (Pr[0] + x[3]))**2 + (P1[1] - (Pr[1] + x[4]))**2)) \
                   + sigma_ranging**2*(sigma_u**2*fx**2*((P1[0] - (Pb[0] + x[6]))*(P1[1] - (Pc[1] + x[1])) - (P1[1] - (Pb[1] + x[7]))*(P1[0] - (Pc[0] + x[0])))**2 + sigma_v**2*fy**2*(P1[2] - (Pc[2] + x[2]))**2*((P1[1] - (Pb[1] + x[7]))*sin(thetac + x[9]) + (P1[0] - (Pb[0] + x[6]))*cos(thetac + x[9]))**2)/((cos(thetac + x[9])*(P1[0] - (Pc[0] + x[0])) + sin(thetac + x[9])*(P1[1] - (Pc[1] + x[1])))**4*((P1[0] - (Pb[0] + x[6]))**2 + (P1[1] - (Pb[1] + x[7]))**2)**2) \
                   + sigma_ranging**2*sigma_bearing**2*fx**2*fy**2*(P1[2] - (Pc[2] + x[2]))**2/(cos(thetac + x[9])*(P1[0] - (Pc[0] + x[0])) + sin(thetac + x[9])*(P1[1] - (Pc[1] + x[1])))**6 \
-                )/( \
+                )*( \
                   sigma_u**2*sigma_v**2*((P2[0] - (Pb[0] + x[6]))*(P2[0] - (Pr[0] + x[3])) + (P2[1] - (Pb[1] + x[7]))*(P2[1] - (Pr[1] + x[4])))**2/(((P2[0] - (Pb[0] + x[6]))**2 + (P2[1] - (Pb[1] + x[7]))**2)**2*((P2[0] - (Pr[0] + x[3]))**2 + (P2[1] - (Pr[1] + x[4]))**2)) \
                   + sigma_bearing**2*(sigma_v**2*fx**2*((P2[0] - (Pr[0] + x[3]))*(P2[0] - (Pc[0] + x[0])) + (P2[1] - (Pr[1] + x[4]))*(P2[1] - (Pc[1] + x[1])))**2 + sigma_u**2*fy**2*(P2[2] - (Pc[2] + x[2]))**2*((P2[1] - (Pr[1] + x[4]))*cos(thetac + x[9]) - (P2[0] - (Pr[0] + x[3]))*sin(thetac + x[9]))**2)/((cos(thetac + x[9])*(P2[0] - (Pc[0] + x[0])) + sin(thetac + x[9])*(P2[1] - (Pc[1] + x[1])))**4*((P2[0] - (Pr[0] + x[3]))**2 + (P2[1] - (Pr[1] + x[4]))**2)) \
                   + sigma_ranging**2*(sigma_u**2*fx**2*((P2[0] - (Pb[0] + x[6]))*(P2[1] - (Pc[1] + x[1])) - (P2[1] - (Pb[1] + x[7]))*(P2[0] - (Pc[0] + x[0])))**2 + sigma_v**2*fy**2*(P2[2] - (Pc[2] + x[2]))**2*((P2[1] - (Pb[1] + x[7]))*sin(thetac + x[9]) + (P2[0] - (Pb[0] + x[6]))*cos(thetac + x[9]))**2)/((cos(thetac + x[9])*(P2[0] - (Pc[0] + x[0])) + sin(thetac + x[9])*(P2[1] - (Pc[1] + x[1])))**4*((P2[0] - (Pb[0] + x[6]))**2 + (P2[1] - (Pb[1] + x[7]))**2)**2) \
                   + sigma_ranging**2*sigma_bearing**2*fx**2*fy**2*(P2[2] - (Pc[2] + x[2]))**2/(cos(thetac + x[9])*(P2[0] - (Pc[0] + x[0])) + sin(thetac + x[9])*(P2[1] - (Pc[1] + x[1])))**6 \
-                )/( \
+                )*( \
                   sigma_u**2*sigma_v**2*((P3[0] - (Pb[0] + x[6]))*(P3[0] - (Pr[0] + x[3])) + (P3[1] - (Pb[1] + x[7]))*(P3[1] - (Pr[1] + x[4])))**2/(((P3[0] - (Pb[0] + x[6]))**2 + (P3[1] - (Pb[1] + x[7]))**2)**2*((P3[0] - (Pr[0] + x[3]))**2 + (P3[1] - (Pr[1] + x[4]))**2)) \
                   + sigma_bearing**2*(sigma_v**2*fx**2*((P3[0] - (Pr[0] + x[3]))*(P3[0] - (Pc[0] + x[0])) + (P3[1] - (Pr[1] + x[4]))*(P3[1] - (Pc[1] + x[1])))**2 + sigma_u**2*fy**2*(P3[2] - (Pc[2] + x[2]))**2*((P3[1] - (Pr[1] + x[4]))*cos(thetac + x[9]) - (P3[0] - (Pr[0] + x[3]))*sin(thetac + x[9]))**2)/((cos(thetac + x[9])*(P3[0] - (Pc[0] + x[0])) + sin(thetac + x[9])*(P3[1] - (Pc[1] + x[1])))**4*((P3[0] - (Pr[0] + x[3]))**2 + (P3[1] - (Pr[1] + x[4]))**2)) \
                   + sigma_ranging**2*(sigma_u**2*fx**2*((P3[0] - (Pb[0] + x[6]))*(P3[1] - (Pc[1] + x[1])) - (P3[1] - (Pb[1] + x[7]))*(P3[0] - (Pc[0] + x[0])))**2 + sigma_v**2*fy**2*(P3[2] - (Pc[2] + x[2]))**2*((P3[1] - (Pb[1] + x[7]))*sin(thetac + x[9]) + (P3[0] - (Pb[0] + x[6]))*cos(thetac + x[9]))**2)/((cos(thetac + x[9])*(P3[0] - (Pc[0] + x[0])) + sin(thetac + x[9])*(P3[1] - (Pc[1] + x[1])))**4*((P3[0] - (Pb[0] + x[6]))**2 + (P3[1] - (Pb[1] + x[7]))**2)**2) \
@@ -57,13 +58,13 @@ def cons_maker1(i=0):
 def odom(msg):
 	global P1,P2,P3,Pc,Pr,Pb,A,b,thetac
 	
-	Pc = np.array([msg.data[12], msg.data[13], msg.data[14]])
-	Pr = np.array([msg.data[15], msg.data[16], msg.data[17]])
-	Pb = np.array([msg.data[18], msg.data[19], msg.data[20]])
-	P1 = np.array([msg.data[0], msg.data[1], 0])
-	P2 = np.array([msg.data[4], msg.data[5], 0])
-	P3 = np.array([msg.data[8], msg.data[9], 0])
-	thetac = msg.data[21]
+	Pc = np.array([msg.data[18], msg.data[19], msg.data[20]])
+	Pr = np.array([msg.data[21], msg.data[22], msg.data[23]])
+	Pb = np.array([msg.data[24], msg.data[25], msg.data[26]])
+	P1 = np.array([msg.data[0], msg.data[1], msg.data[2]])
+	P2 = np.array([msg.data[6], msg.data[7], msg.data[8]])
+	P3 = np.array([msg.data[12], msg.data[13], msg.data[14]])
+	thetac = msg.data[27]
 	'''
 	UAV1_index = msg.name.index('iris_camera')
 	UAV2_index = msg.name.index('iris_ranging')
@@ -161,9 +162,9 @@ def odom(msg):
 				  [atan2(lx,2*fx) - x_fov_wealth - acos(np.dot(nc,r1c_xy)/np.linalg.norm(r1c_xy))], \
 				  [atan2(lx,2*fx) - x_fov_wealth - acos(np.dot(nc,r2c_xy)/np.linalg.norm(r2c_xy))], \
 				  [atan2(lx,2*fx) - x_fov_wealth - acos(np.dot(nc,r3c_xy)/np.linalg.norm(r3c_xy))], \
-				  [atan2(ly,2*fy) - atan2(np.linalg.norm(r1c_z),np.dot(nc,r1c_xy))], \
-				  [atan2(ly,2*fy) - atan2(np.linalg.norm(r2c_z),np.dot(nc,r2c_xy))], \
-				  [atan2(ly,2*fy) - atan2(np.linalg.norm(r3c_z),np.dot(nc,r3c_xy))], \
+				  [atan2(ly,2*fy) - y_fov_wealth - atan2(np.linalg.norm(r1c_z),np.dot(nc,r1c_xy))], \
+				  [atan2(ly,2*fy) - y_fov_wealth - atan2(np.linalg.norm(r2c_z),np.dot(nc,r2c_xy))], \
+				  [atan2(ly,2*fy) - y_fov_wealth - atan2(np.linalg.norm(r3c_z),np.dot(nc,r3c_xy))], \
 				  [Pc[2] - height_l], \
 				  [Pr[2] - height_l], \
 				  [Pb[2] - height_l] \
@@ -207,7 +208,7 @@ if __name__ == '__main__':
 		px4_camera = Px4Controller(uavtype[0])
 		px4_ranging = Px4Controller(uavtype[1])
 		px4_bearing = Px4Controller(uavtype[2])
-		rate = rospy.Rate(40)
+		rate = rospy.Rate(50)
 		'''
 		while thetac == None:
 			thetac = px4_camera.current_heading
