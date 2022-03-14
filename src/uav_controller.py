@@ -18,13 +18,13 @@ fx,fy,lx,ly = 0.1496485702,0.1496485702,0.1693333333,0.127
 #fx,fy,lx,ly = 565.6,565.6,640,480
 #sigma_u,sigma_v,sigma_ranging,sigma_bearing = 0.007,0.007,0.01,0.01
 sigma_u,sigma_v,sigma_ranging,sigma_bearing = 1,1,1,1
-x_fov_wealth = 8*pi/180
-y_fov_wealth = 5*pi/180
-height_l = 0.5
+x_fov_wealth = 5*pi/180
+y_fov_wealth = 3*pi/180
+height_l = 0.3
 height_u = 100
-d_safe_car = 3
-d_measuring = 7
-d_safe_uav = 1
+d_safe_car = 0.7
+d_measuring = 3
+d_safe_uav = 0.7
 d_communication = 20
 gamma = 1.0
 
@@ -57,7 +57,7 @@ def cons_maker1(i=0):
 
 def odom(msg):
 	global P1,P2,P3,Pc,Pr,Pb,A,b,thetac
-	
+	'''
 	Pc = np.array([msg.data[18], msg.data[19], msg.data[20]])
 	Pr = np.array([msg.data[21], msg.data[22], msg.data[23]])
 	Pb = np.array([msg.data[24], msg.data[25], msg.data[26]])
@@ -78,7 +78,7 @@ def odom(msg):
 	P1 = np.array([msg.pose[car1_index].position.x, msg.pose[car1_index].position.y, msg.pose[car1_index].position.z])
 	P2 = np.array([msg.pose[car2_index].position.x, msg.pose[car2_index].position.y, msg.pose[car2_index].position.z])
 	P3 = np.array([msg.pose[car3_index].position.x, msg.pose[car3_index].position.y, msg.pose[car3_index].position.z])
-	'''
+	
 	nc = np.array([cos(thetac),sin(thetac),0])
 	nc_dot = np.array([-sin(thetac),cos(thetac),0])
 	r1c_xy = np.array([P1[0] - Pc[0],P1[1] - Pc[1],0])
@@ -209,19 +209,18 @@ if __name__ == '__main__':
 		px4_ranging = Px4Controller(uavtype[1])
 		px4_bearing = Px4Controller(uavtype[2])
 		rate = rospy.Rate(50)
-		'''
+		
 		while thetac == None:
 			thetac = px4_camera.current_heading
-		
+
 		while not rospy.is_shutdown():
 			msg = rospy.wait_for_message('/gazebo/model_states', ModelStates)
-			thetac = px4_camera.current_heading			
-			odom(msg)
-		'''
-		while not rospy.is_shutdown():
+			thetac = px4_camera.current_heading	
+			'''
 			msg = rospy.wait_for_message('/state', Float64MultiArray)			
+			'''			
 			odom(msg)
-			
+		
 			qpsolver()
 			rate.sleep()
 	except rospy.ROSInterruptException:

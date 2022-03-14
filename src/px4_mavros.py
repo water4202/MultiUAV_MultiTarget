@@ -26,7 +26,7 @@ class Px4Controller:
         self.z = None
         self.desired_x = 0.0
         self.desired_y = 0.0
-        self.desired_z = 1.0
+        self.desired_z = 0.5
         self.cur_target_pose = None
         self.arm_state = False
         self.offboard_state = False
