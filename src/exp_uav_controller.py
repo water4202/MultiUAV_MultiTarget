@@ -19,12 +19,12 @@ ranging_cmd_vel = Twist()
 bearing_cmd_vel = Twist()
 fx,fy,lx,ly = 0.1496485702,0.1496485702,0.1693333333,0.127
 #fx,fy,lx,ly = 565.6,565.6,640,480
-#sigma_u,sigma_v,sigma_ranging,sigma_bearing,sigma_alpha = 0.007,0.007,0.01,0.01,0.01
-sigma_u,sigma_v,sigma_ranging,sigma_bearing,sigma_alpha = 1,1,1,1,1
+sigma_u,sigma_v,sigma_ranging,sigma_bearing,sigma_alpha = 0.007,0.007,0.01,0.01,0.01
+#sigma_u,sigma_v,sigma_ranging,sigma_bearing,sigma_alpha = 1,1,1,1,1
 x_fov_wealth = 3*pi/180
 y_fov_wealth = 3*pi/180
 height_l = 0.3
-height_u = 100
+height_u = 1.8
 d_safe_car = 0.7
 d_measuring = 2.2
 d_safe_uav = 0.7
@@ -204,7 +204,7 @@ def	qpsolver():
 					  mutation=get_mutation("real_pm", eta=20), eliminate_duplicates=True)
 	termination = get_termination("n_gen", 8)
 	dt = rospy.Time.now().to_sec() - time_last
-	res = minimize(objective, algorithm, termination, seed=1, save_history=True, verbose=True, return_least_infeasible=True)
+	res = minimize(objective, algorithm, termination, seed=1, save_history=True, verbose=False, return_least_infeasible=True)
 	
 	tmp = np.inf
 	num_opt = 0

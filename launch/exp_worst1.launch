@@ -16,17 +16,17 @@
     <!-- Target1 -->
 	<group ns="car1">
 		<param name="robot_description" command="$(find xacro)/xacro $(find Multi-UAV-Multi-Target)/urdf/turtlebot3_description/turtlebot3_burger.urdf.xacro" />		
-		<node name="car1" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -model car1 -x -1.5 -y 0.5 -z 0 -R 0 -P 0 -Y 0 -param robot_description"/>
+		<node name="car1" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -model car1 -x -0.8 -y 0.7 -z 0 -R 0 -P 0 -Y 0 -param robot_description"/>
 	</group>
 	<!-- Target2 -->
 	<group ns="car2">		
 		<param name="robot_description" command="$(find xacro)/xacro $(find Multi-UAV-Multi-Target)/urdf/turtlebot3_description/turtlebot3_burger.urdf.xacro" />
-		<node name="car2" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -model car2 -x -1.5 -y -0.5 -z 0 -R 0 -P 0 -Y 0 -param robot_description"/>
+		<node name="car2" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -model car2 -x -0.8 -y -0.3 -z 0 -R 0 -P 0 -Y 0 -param robot_description"/>
 	</group>
 	<!-- Target3 -->
 	<group ns="car3">		
 		<param name="robot_description" command="$(find xacro)/xacro $(find Multi-UAV-Multi-Target)/urdf/turtlebot3_description/turtlebot3_burger.urdf.xacro" />
-		<node name="car3" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -model car3 -x -1.0 -y 0 -z 0 -R 0 -P 0 -Y 0 -param robot_description"/>
+		<node name="car3" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -model car3 -x -0.3 -y 0.2 -z 0 -R 0 -P 0 -Y 0 -param robot_description"/>
 	</group>-->
 
     <!-- UAV0 -->
@@ -36,8 +36,8 @@
         <arg name="fcu_url" default="udp://:14540@localhost:14580"/>
         <!-- PX4 SITL and vehicle spawn -->
         <include file="$(find Multi-UAV-Multi-Target)/launch/single_vehicle_spawn.launch">
-            <arg name="x" value="-2.82"/>
-            <arg name="y" value="1.29"/>
+            <arg name="x" value="-2.12"/>
+            <arg name="y" value="1.49"/>
             <arg name="z" value="0"/>
             <arg name="R" value="0"/>
             <arg name="P" value="0"/>
@@ -66,8 +66,8 @@
         <arg name="fcu_url" default="udp://:14541@localhost:14581"/>
         <!-- PX4 SITL and vehicle spawn -->
         <include file="$(find Multi-UAV-Multi-Target)/launch/single_vehicle_spawn.launch">
-            <arg name="x" value="-2.05"/>
-            <arg name="y" value="-1.25"/>
+            <arg name="x" value="-1.50"/>
+            <arg name="y" value="-1.05"/>
             <arg name="z" value="0"/>
             <arg name="R" value="0"/>
             <arg name="P" value="0"/>
@@ -96,8 +96,8 @@
         <arg name="fcu_url" default="udp://:14542@localhost:14582"/>
         <!-- PX4 SITL and vehicle spawn -->
         <include file="$(find Multi-UAV-Multi-Target)/launch/single_vehicle_spawn.launch">
-            <arg name="x" value="0.57"/>
-            <arg name="y" value="0"/>
+            <arg name="x" value="1.07"/>
+            <arg name="y" value="-0.35"/>
             <arg name="z" value="0"/>
             <arg name="R" value="0"/>
             <arg name="P" value="0"/>

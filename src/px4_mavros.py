@@ -66,7 +66,7 @@ class Px4Controller:
         self.local_cmd.twist.linear.y = (self.desired_y - self.y)
         self.local_cmd.twist.linear.z = (self.desired_z - self.z)
         self.vel_pub.publish(self.local_cmd)
-    	
+
     def OffboardandArm(self):
         self.arm_state = self.arm()
         self.offboard_state = self.offboard()
