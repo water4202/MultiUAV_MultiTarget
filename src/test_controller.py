@@ -23,7 +23,7 @@ sigma_u,sigma_v,sigma_ranging,sigma_bearing,sigma_alpha = 0.007,0.007,0.01,0.01,
 x_fov_wealth = 3*pi/180
 y_fov_wealth = 3*pi/180
 height_l = 0.3
-height_u = 100
+height_u = 1.8
 d_safe_car = 0.7
 d_measuring = 2.2
 d_safe_uav = 0.7
@@ -34,11 +34,12 @@ time_last,dt = 0,0
 class Objective(ElementwiseProblem):
 
 	def __init__(self):
-		super().__init__(n_var=10,n_obj=3,n_constr=b.size, \
+		super().__init__(n_var=10,n_obj=15,n_constr=b.size, \
 						 xl=np.array([-0.3]*10),xu=np.array([0.3]*10))
 		self.cons = []
 
 	def _evaluate(self, x, out, *args, **kwargs):
+		'''
 		R = np.array([[sigma_u,0,0,0,0],[0,sigma_v,0,0,0],[0,0,sigma_ranging,0,0],[0,0,0,sigma_bearing,0],[0,0,0,0,sigma_alpha]])
 
 		dO1 = np.array([ \
@@ -65,45 +66,64 @@ class Objective(ElementwiseProblem):
 						[-(P3[0] - (Pb[0] + dt*x[6]))*(P3[2] - (Pb[2] + dt*x[8]))/(np.linalg.norm(P3 - (Pb + dt*np.array([x[6],x[7],x[8]])))**2*sqrt((P3[0] - (Pb[0] + dt*x[6]))**2 + (P3[1] - (Pb[1] + dt*x[7]))**2)), -(P3[1] - (Pb[1] + dt*x[7]))*(P3[2] - (Pb[2] + dt*x[8]))/(np.linalg.norm(P3 - (Pb + dt*np.array([x[6],x[7],x[8]])))**2*sqrt((P3[0] - (Pb[0] + dt*x[6]))**2 + (P3[1] - (Pb[1] + dt*x[7]))**2)), sqrt((P3[0] - (Pb[0] + dt*x[6]))**2 + (P3[1] - (Pb[1] + dt*x[7]))**2)/np.linalg.norm(P3 - (Pb + dt*np.array([x[6],x[7],x[8]])))**2], \
 					  ])
 		'''
-		U1,S,V1 = np.linalg.svd(dO1)
-		S1 = np.zeros((U1.shape[0],V1.shape[0]))
-		S1[:S.size,:S.size] = np.diag(S)
-		dS1 = self.lap(np.transpose(S1))
-		U2,S,V2 = np.linalg.svd(dO2)
-		S2 = np.zeros((U2.shape[0],V2.shape[0]))
-		S2[:S.size,:S.size] = np.diag(S)
-		dS2 = self.lap(np.transpose(S2))
-		U3,S,V3 = np.linalg.svd(dO3)
-		S3 = np.zeros((U3.shape[0],V3.shape[0]))
-		S3[:S.size,:S.size] = np.diag(S)
-		dS3 = self.lap(np.transpose(S3))
-		
-		f1 = np.linalg.det(V1)*dS1*dS1*np.linalg.det(V1)
-		f2 = np.linalg.det(V2)*dS2*dS1*np.linalg.det(V2)
-		f3 = np.linalg.det(V3)*dS3*dS1*np.linalg.det(V3)
 		'''
-		f1 = self.lap(np.transpose(dO1))*self.lap(dO1)
-		f2 = self.lap(np.transpose(dO2))*self.lap(dO2)
-		f3 = self.lap(np.transpose(dO3))*self.lap(dO3)
+		f1 = np.trace(np.transpose(dO1).dot(np.linalg.inv(R)).dot(dO1))
+		f2 = np.trace(np.transpose(dO2).dot(np.linalg.inv(R)).dot(dO2))
+		f3 = np.trace(np.transpose(dO3).dot(np.linalg.inv(R)).dot(dO3))
+		'''
+		'''
+		S1 = np.linalg.svd(dO1,full_matrices=False, compute_uv=False)
+		S2 = np.linalg.svd(dO2,full_matrices=False, compute_uv=False)
+		S3 = np.linalg.svd(dO3,full_matrices=False, compute_uv=False)
+		
+		f1 = (S1[0]*S1[1]*S1[2])**2
+		f2 = (S2[0]*S2[1]*S2[2])**2
+		f3 = (S3[0]*S3[1]*S3[2])**2
+		'''
+		r1c_xy = np.array([P1[0] - (Pc[0] + dt*x[0]),P1[1] - (Pc[1] + dt*x[1]),0])
+		r1c_z = np.array([0,0,P1[2] - (Pc[2] + dt*x[2])])
+		nc = np.array([cos(thetac + dt*x[9]),sin(thetac + dt*x[9]),0])
+		r1b = np.array([P1[0] - (Pb[0] + dt*x[6]),P1[1] - (Pb[1] + dt*x[7]),P1[2] - (Pb[2] + dt*x[8])])
+		r1b_xy = np.array([P1[0] - (Pb[0] + dt*x[6]),P1[1] - (Pb[1] + dt*x[7]),0])
+
+		r2c_xy = np.array([P2[0] - (Pc[0] + dt*x[0]),P2[1] - (Pc[1] + dt*x[1]),0])
+		r2c_z = np.array([0,0,P2[2] - (Pc[2] + dt*x[2])])
+		r2b = np.array([P2[0] - (Pb[0] + dt*x[6]),P2[1] - (Pb[1] + dt*x[7]),P2[2] - (Pb[2] + dt*x[8])])
+		r2b_xy = np.array([P2[0] - (Pb[0] + dt*x[6]),P2[1] - (Pb[1] + dt*x[7]),0])
+
+		r3c_xy = np.array([P3[0] - (Pc[0] + dt*x[0]),P3[1] - (Pc[1] + dt*x[1]),0])
+		r3c_z = np.array([0,0,P3[2] - (Pc[2] + dt*x[2])])
+		r3b = np.array([P3[0] - (Pb[0] + dt*x[6]),P3[1] - (Pb[1] + dt*x[7]),P3[2] - (Pb[2] + dt*x[8])])
+		r3b_xy = np.array([P3[0] - (Pb[0] + dt*x[6]),P3[1] - (Pb[1] + dt*x[7]),0])
+
+
+		f1_b = 1/np.linalg.norm(r1b_xy)**2
+		f1_a = 1/np.linalg.norm(r1b)**2
+		f1_u = np.linalg.norm(r1c_xy)**2
+		f1_v1 = np.linalg.norm(r1c_z)**2
+		f1_v2 = 1/(nc.dot(r1c_xy))**2
+		f1 = f1_b + f1_a + f1_u + f1_v1 + f1_v2
+
+		f2_b = 1/np.linalg.norm(r2b_xy)**2
+		f2_a = 1/np.linalg.norm(r2b)**2
+		f2_u = np.linalg.norm(r2c_xy)**2
+		f2_v1 = np.linalg.norm(r2c_z)**2
+		f2_v2 = 1/(nc.dot(r2c_xy))**2
+		f2 = f2_b + f2_a + f2_u + f2_v1 + f2_v2
+
+		f3_b = 1/np.linalg.norm(r3b_xy)**2
+		f3_a = 1/np.linalg.norm(r3b)**2
+		f3_u = np.linalg.norm(r3c_xy)**2
+		f3_v1 = np.linalg.norm(r3c_z)**2
+		f3_v2 = 1/(nc.dot(r3c_xy))**2
+		f3 = f3_b + f3_a + f3_u + f3_v1 + f3_v2
 
 		for i in range (b.size):
 			self.cons += list(A[i,0]*x[0] + A[i,1]*x[1] + A[i,2]*x[2] + A[i,3]*x[3] + A[i,4]*x[4] + A[i,5]*x[5] + A[i,6]*x[6] + A[i,7]*x[7] + A[i,8]*x[8] + A[i,9]*x[9] - b[i])
 
-		out["F"] = [f1, f2, f3]
+		out["F"] = [f1_b, f1_a, f1_u, f1_v1, f1_v2, f2_b, f2_a, f2_u, f2_v1, f2_v2, f3_b, f3_a, f3_u, f3_v1, f3_v2]
 		out["G"] = self.cons
 		self.cons = []
-	
-	def lap(self,X):
-		m = X.shape[0]
-		n = X.shape[1]
-		if m == 1:
-			return X[:,::2].sum() - X[:,1::2].sum()
-		if m == n:
-			return np.linalg.det(X)
-		d = 0
-		for i in range(n):
-			d = d + (-1)**i*X[0,i]*self.lap(np.concatenate((X[1:,:i],X[1:,i+1:]), axis=1))
-		return d
 
 def odom(msg):
 	global P1,P2,P3,Pc,Pr,Pb,A,b,thetac
@@ -115,20 +135,7 @@ def odom(msg):
 	P2 = np.array([msg.data[6], msg.data[7], msg.data[8]])
 	P3 = np.array([msg.data[12], msg.data[13], msg.data[14]])
 	thetac = msg.data[27]
-	'''
-	UAV1_index = msg.name.index('iris_camera')
-	UAV2_index = msg.name.index('iris_ranging')
-	UAV3_index = msg.name.index('iris_bearing')
-	car1_index = msg.name.index('car1')
-	car2_index = msg.name.index('car2')
-	car3_index = msg.name.index('car3')
-	Pc = np.array([msg.pose[UAV1_index].position.x, msg.pose[UAV1_index].position.y, msg.pose[UAV1_index].position.z])
-	Pr = np.array([msg.pose[UAV2_index].position.x, msg.pose[UAV2_index].position.y, msg.pose[UAV2_index].position.z])
-	Pb = np.array([msg.pose[UAV3_index].position.x, msg.pose[UAV3_index].position.y, msg.pose[UAV3_index].position.z])
-	P1 = np.array([msg.pose[car1_index].position.x, msg.pose[car1_index].position.y, msg.pose[car1_index].position.z])
-	P2 = np.array([msg.pose[car2_index].position.x, msg.pose[car2_index].position.y, msg.pose[car2_index].position.z])
-	P3 = np.array([msg.pose[car3_index].position.x, msg.pose[car3_index].position.y, msg.pose[car3_index].position.z])
-	'''
+
 	nc = np.array([cos(thetac),sin(thetac),0])
 	nc_dot = np.array([-sin(thetac),cos(thetac),0])
 	r1c_xy = np.array([P1[0] - Pc[0],P1[1] - Pc[1],0])
@@ -176,7 +183,10 @@ def odom(msg):
 				  np.append((np.linalg.norm(r3c_z)*nc/np.dot(nc,r3c_xy)**2-r3c_z/np.linalg.norm(r3c_z)/np.dot(nc,r3c_xy))/(1 + np.linalg.norm(r3c_z)**2/np.dot(nc,r3c_xy)**2),np.append([0]*6,-np.linalg.norm(r3c_z)*np.dot(nc_dot,r3c_xy)/np.dot(nc,r3c_xy)**2/(1 + np.linalg.norm(r3c_z)**2/np.dot(nc,r3c_xy)**2))), \
 				  [0]*2+[-1]+[0]*7, \
 				  [0]*5+[-1]+[0]*4, \
-				  [0]*8+[-1]+[0] \
+				  [0]*8+[-1]+[0], \
+				  [0]*2+[1]+[0]*7, \
+				  [0]*5+[1]+[0]*4, \
+				  [0]*8+[1]+[0] \
 				  ])
 
 	b = np.array([[np.linalg.norm([Pc[0]-P1[0],Pc[1]-P1[1]])**2 - d_safe_car**2], \
@@ -217,7 +227,10 @@ def odom(msg):
 				  [atan2(ly,2*fy) - y_fov_wealth - atan2(np.linalg.norm(r3c_z),np.dot(nc,r3c_xy))], \
 				  [Pc[2] - height_l], \
 				  [Pr[2] - height_l], \
-				  [Pb[2] - height_l] \
+				  [Pb[2] - height_l], \
+				  [height_u - Pc[2]], \
+				  [height_u - Pr[2]], \
+				  [height_u - Pb[2]] \
 				  ])
 
 def	qpsolver():
@@ -266,15 +279,7 @@ if __name__ == '__main__':
 		px4_ranging = Px4Controller(uavtype[1])
 		px4_bearing = Px4Controller(uavtype[2])
 		rate = rospy.Rate(50)
-		'''
-		while thetac == None:
-			thetac = px4_camera.current_heading
-		
-		while not rospy.is_shutdown():
-			msg = rospy.wait_for_message('/gazebo/model_states', ModelStates)
-			thetac = px4_camera.current_heading			
-			odom(msg)
-		'''
+
 		while not rospy.is_shutdown():
 			msg = rospy.wait_for_message('/state', Float64MultiArray)			
 			odom(msg)

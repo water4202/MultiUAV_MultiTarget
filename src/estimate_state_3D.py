@@ -158,7 +158,7 @@ if __name__ == "__main__":
         thetac_sub = rospy.Subscriber("/theta_iris_camera", Float64MultiArray, theta_update, queue_size=10)
         while thetac == None:
             pass
-        rate = rospy.Rate(50)
+        rate = rospy.Rate(500)
         while not rospy.is_shutdown():
             '''
             msgs = rospy.wait_for_message('/gazebo/model_states', ModelStates)
