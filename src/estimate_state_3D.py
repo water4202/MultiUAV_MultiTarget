@@ -8,7 +8,7 @@ from gazebo_msgs.msg import ModelStates
 from std_msgs.msg import Float64MultiArray
 from rosgraph_msgs.msg import Clock
 import rosbag
-bag = rosbag.Bag('optimal_random.bag', 'w')
+bag = rosbag.Bag('worst_random.bag', 'w')
 
 msgs = None
 P1,P2,P3,Pc,Pr,Pb,measurement,thetac = None,None,None,None,None,None,None,None
@@ -158,7 +158,7 @@ if __name__ == "__main__":
         thetac_sub = rospy.Subscriber("/theta_iris_camera", Float64MultiArray, theta_update, queue_size=10)
         while thetac == None:
             pass
-        rate = rospy.Rate(500)
+        rate = rospy.Rate(50)
         while not rospy.is_shutdown():
             '''
             msgs = rospy.wait_for_message('/gazebo/model_states', ModelStates)
