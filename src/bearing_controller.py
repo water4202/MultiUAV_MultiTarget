@@ -3,16 +3,14 @@
 import rospy
 from math import sin,cos,sqrt,atan2,acos,pi
 import numpy as np
-from gazebo_msgs.msg import ModelStates
+import gurobipy as gp
+from scipy.optimize import minimize
 from geometry_msgs.msg import Twist
 from px4_mavros import Px4Controller
 from std_msgs.msg import Float64MultiArray
-from pymoo.core.problem import ElementwiseProblem
-from pymoo.algorithms.moo.nsga2 import NSGA2
-from pymoo.factory import get_sampling, get_crossover, get_mutation, get_termination
-from pymoo.optimize import minimize
+from gurobipy import GRB
 
-P1,P2,P3,Pc,Pr,Pb,A,b = None,None,None,None,None,None,None,None
+P1,P2,P3,Pc,Pr,Pb,A,b,Pcen = None,None,None,None,None,None,None,None,None
 bearing_cmd_vel = Twist()
 sigma_u,sigma_v,sigma_ranging,sigma_bearing,sigma_alpha = 0.007,0.007,0.01,0.01,0.01
 height_l = 0.3
@@ -21,42 +19,21 @@ d_safe_car = 0.7
 d_measuring = 2.2
 d_safe_uav = 0.7
 d_communication = 20
-time_last,dt = 0,0
-
-class Objective(ElementwiseProblem):
-
-	def __init__(self):
-		super().__init__(n_var=3,n_obj=6,n_constr=b.size, \
-						 xl=np.array([-0.3]*3),xu=np.array([0.3]*3))
-
-	def _evaluate(self, x, out, *args, **kwargs):
-		
-		r1b = np.array([P1[0] - (Pb[0] + dt*x[0]),P1[1] - (Pb[1] + dt*x[1]),P1[2] - (Pb[2] + dt*x[2])])
-		r2b = np.array([P2[0] - (Pb[0] + dt*x[0]),P2[1] - (Pb[1] + dt*x[1]),P2[2] - (Pb[2] + dt*x[2])])
-		r3b = np.array([P3[0] - (Pb[0] + dt*x[0]),P3[1] - (Pb[1] + dt*x[1]),P3[2] - (Pb[2] + dt*x[2])])
-
-
-		f1_b = 1/np.linalg.norm(r1b[:2])**2
-		f1_a = 1/r1b[2]**2
-
-		f2_b = 1/np.linalg.norm(r2b[:2])**2
-		f2_a = 1/r2b[2]**2
-
-		f3_b = 1/np.linalg.norm(r3b[:2])**2
-		f3_a = 1/r3b[2]**2
-
-		out["F"] = [1/f1_b, 1/f1_a, 1/f2_b, 1/f2_a, 1/f3_b, 1/f3_a]
-		out["G"] = (A.dot(x.reshape((3,1))) - b).reshape(12,).tolist()
+m,x = None,None
 
 def odom(msg):
-	global P1,P2,P3,Pc,Pr,Pb,A,b
+	global P1,P2,P3,Pc,Pr,Pb,A,b,Pcen
 	
 	Pc = np.array(msg.data[18:21])
 	Pr = np.array(msg.data[21:24])
 	Pb = np.array(msg.data[24:27])
-	P1 = np.array(msg.data[0:3])
-	P2 = np.array(msg.data[6:9])
-	P3 = np.array(msg.data[12:15])
+	#P1 = np.array(msg.data[0:3])
+	#P2 = np.array(msg.data[6:9])
+	#P3 = np.array(msg.data[12:15])
+	P1 = np.array([-0.8,0.7,0])
+	P2 = np.array([-0.8,-0.3,0])
+	P3 = np.array([-0.3,0.2,0])
+	Pcen = (P1+P2+P3)/3
 
 	A = np.array([ \
 				  (-2*(Pb-P1)[:2]).tolist()+[0], \
@@ -72,52 +49,72 @@ def odom(msg):
 				  [0]*2+[-1], \
 				  [0]*2+[1], \
 				  ])
-	
+				  #(2*(Pb-P1)[:2]).tolist()+[0], \
+				  #(2*(Pb-P2)[:2]).tolist()+[0], \
+				  #(2*(Pb-P3)[:2]).tolist()+[0], \
 	b = np.array([ \
-				  [np.linalg.norm((Pb-P1)[:2])**2 - d_safe_car**2], \
-				  [np.linalg.norm((Pb-P2)[:2])**2 - d_safe_car**2], \
-				  [np.linalg.norm((Pb-P3)[:2])**2 - d_safe_car**2], \
-				  [d_measuring**2 - np.linalg.norm((Pb-P1)[:2])**2], \
-				  [d_measuring**2 - np.linalg.norm((Pb-P2)[:2])**2], \
-				  [d_measuring**2 - np.linalg.norm((Pb-P3)[:2])**2], \
-				  [np.linalg.norm((Pb-Pc)[:2])**2 - d_safe_uav**2], \
-				  [np.linalg.norm((Pb-Pr)[:2])**2 - d_safe_uav**2], \
-				  [d_communication**2 - np.linalg.norm((Pb-Pc)[:2])**2], \
-				  [d_communication**2 - np.linalg.norm((Pb-Pr)[:2])**2], \
-				  [Pb[2] - height_l], \
-				  [height_u - Pb[2]] \
+				  np.linalg.norm((Pb-P1)[:2])**2 - d_safe_car**2, \
+				  np.linalg.norm((Pb-P2)[:2])**2 - d_safe_car**2, \
+				  np.linalg.norm((Pb-P3)[:2])**2 - d_safe_car**2, \
+				  d_measuring**2 - np.linalg.norm((Pb-P1)[:2])**2, \
+				  d_measuring**2 - np.linalg.norm((Pb-P2)[:2])**2, \
+				  d_measuring**2 - np.linalg.norm((Pb-P3)[:2])**2, \
+				  np.linalg.norm((Pb-Pc)[:2])**2 - d_safe_uav**2, \
+				  np.linalg.norm((Pb-Pr)[:2])**2 - d_safe_uav**2, \
+				  d_communication**2 - np.linalg.norm((Pb-Pc)[:2])**2, \
+				  d_communication**2 - np.linalg.norm((Pb-Pr)[:2])**2, \
+				  Pb[2] - height_l, \
+				  height_u - Pb[2] \
 				  ])
+				  #d_measuring**2 - np.linalg.norm((Pb-P1)[:2])**2, \
+				  #d_measuring**2 - np.linalg.norm((Pb-P2)[:2])**2, \
+				  #d_measuring**2 - np.linalg.norm((Pb-P3)[:2])**2, \
+
+def qp_ini():
+	global m,x
+	
+	m = gp.Model("qp")
+	m.setParam("NonConvex", 2.0)
+	m.setParam("LogToConsole",0)
+	x = m.addVars(3,ub=0.3, lb=-0.3, name="x")
+
+def addCons(i):
+	global m
+
+	m.addConstr(A[i,0]*x[0] + A[i,1]*x[1] + A[i,2]*x[2] <= b[i], "c"+str(i))
 	
 def	qpsolver():
-	global bearing_cmd_vel,time_last,dt
+	global bearing_cmd_vel,x
 	
-	objective = Objective()
-	algorithm = NSGA2(pop_size=20,n_offsprings=None,sampling=get_sampling("real_random"), \
-					  crossover=get_crossover("real_sbx", prob=0.9, eta=15), \
-					  mutation=get_mutation("real_pm", eta=20), eliminate_duplicates=True)
-	termination = get_termination("n_gen", 8)
-	dt = rospy.Time.now().to_sec() - time_last
-	res = minimize(objective, algorithm, termination, seed=10, save_history=False, verbose=True, return_least_infeasible=True)
+	obj = -(x[0] - (P1 - Pb)[0])**2 - (x[1] - (P1 - Pb)[1])**2 - (x[2] - (P1 - Pb)[2])**2 - (x[0] - (P2 - Pb)[0])**2 - (x[1] - (P2 - Pb)[1])**2 - (x[2] - (P2 - Pb)[2])**2 - (x[0] - (P3 - Pb)[0])**2 - (x[1] - (P3 - Pb)[1])**2 - (x[2] - (P3 - Pb)[2])**2
+	m.setObjective(obj)
+
+	m.remove(m.getConstrs())
 	
-	tmp = np.cumsum(res.F,axis=1)
-	num_opt = np.argmin(tmp[:,5])
+	for i in range (b.size):
+		addCons(i)
+
+	m.optimize()
+	#print(m.computeIIS())
+	optimal = m.getVars()
+	#print(A.dot(np.array([optimal[0].X,optimal[1].X,optimal[2].X])) - b)
 	
-	bearing_cmd_vel.linear.x = res.X[num_opt,0]
-	bearing_cmd_vel.linear.y = res.X[num_opt,1]
-	bearing_cmd_vel.linear.z = res.X[num_opt,2]
-	
+	bearing_cmd_vel.linear.x = optimal[0].X
+	bearing_cmd_vel.linear.y = optimal[1].X
+	bearing_cmd_vel.linear.z = optimal[2].X
+
 	px4_bearing.vel_control(bearing_cmd_vel)
-	time_last = rospy.Time.now().to_sec()
 
 if __name__ == '__main__':
 	try:
-		rospy.init_node('controller')
+		rospy.init_node('bearing_controller')
 		px4_bearing = Px4Controller("iris_bearing")
 		rospy.Subscriber('/state', Float64MultiArray, odom, queue_size=10)
 		rate = rospy.Rate(100)
 		while b is None:
 			rate.sleep()
 
+		qp_ini()
 		while not rospy.is_shutdown():
 			qpsolver()
 			rate.sleep()
