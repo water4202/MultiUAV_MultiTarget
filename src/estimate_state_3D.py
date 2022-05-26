@@ -169,7 +169,7 @@ if __name__ == "__main__":
             add_measurementnoise()
             ukf()
             estimate_state = state_estimator.get_state()
-            all_state.data = list(estimate_state)+list(uav_state)
+            all_state.data = list(state)+list(uav_state)
             state_pub.publish(all_state)
 #            print "Estimated state: ", state_estimator.get_state()
 #            print "Covariance: ", np.linalg.det(state_estimator.get_covar())

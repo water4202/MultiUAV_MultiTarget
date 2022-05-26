@@ -13,11 +13,11 @@ from gurobipy import GRB
 P1,P2,P3,Pc,Pr,Pb,A,b,Pcen = None,None,None,None,None,None,None,None,None
 range_cmd_vel = Twist()
 sigma_u,sigma_v,sigma_ranging,sigma_bearing,sigma_alpha = 0.007,0.007,0.01,0.01,0.01
-height_l = 0.3
-height_u = 1.8
+height_l = 0.2
+height_u = 0.5
 d_safe_car = 0.7
 d_measuring = 2.2
-d_safe_uav = 0.7
+d_safe_uav = 1
 d_communication = 20
 m,x = None,None
 
@@ -27,12 +27,9 @@ def odom(msg):
 	Pc = np.array(msg.data[18:21])
 	Pr = np.array(msg.data[21:24])
 	Pb = np.array(msg.data[24:27])
-	#P1 = np.array(msg.data[0:3])
-	#P2 = np.array(msg.data[6:9])
-	#P3 = np.array(msg.data[12:15])
-	P1 = np.array([-0.8,0.7,0])
-	P2 = np.array([-0.8,-0.3,0])
-	P3 = np.array([-0.3,0.2,0])
+	P1 = np.array(msg.data[0:3])
+	P2 = np.array(msg.data[6:9])
+	P3 = np.array(msg.data[12:15])
 	Pcen = (P1+P2+P3)/3
 
 	A = np.array([ \
@@ -86,7 +83,8 @@ def addCons(i):
 def	qpsolver():
 	global range_cmd_vel,x
 	
-	obj = -(x[0] - (P1 - Pr)[0])**2 - (x[1] - (P1 - Pr)[1])**2 - (x[2] - (P1 - Pr)[2])**2 - (x[0] - (P2 - Pr)[0])**2 - (x[1] - (P2 - Pr)[1])**2 - (x[2] - (P2 - Pr)[2])**2 - (x[0] - (P3 - Pr)[0])**2 - (x[1] - (P3 - Pr)[1])**2 - (x[2] - (P3 - Pr)[2])**2
+	obj = -(x[0] - (P1 - Pr)[0])**2 - (x[1] - (P1 - Pr)[1])**2 - (x[2] - (P1 - Pr)[2])**2 - (x[0] - (P2 - Pr)[0])**2 - (x[1] - (P2 - Pr)[1])**2 - (x[2] - (P2 - Pr)[2])**2 - (x[0] - (P3 - Pr)[0])**2 - (x[1] - (P3 - Pr)[1])**2 - (x[2] - (P3 - Pr)[2])**2 # worst
+	#obj = (x[0] - (P1 - Pr)[0])**2 + (x[1] - (P1 - Pr)[1])**2 + (x[2] - (P1 - Pr)[2])**2 + (x[0] - (P2 - Pr)[0])**2 + (x[1] - (P2 - Pr)[1])**2 + (x[2] - (P2 - Pr)[2])**2 + (x[0] - (P3 - Pr)[0])**2 + (x[1] - (P3 - Pr)[1])**2 + (x[2] - (P3 - Pr)[2])**2 # optimal
 	m.setObjective(obj)
 
 	m.remove(m.getConstrs())
