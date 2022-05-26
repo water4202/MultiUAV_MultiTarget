@@ -105,8 +105,8 @@ def addCons(i):
 def	qpsolver():
 	global camera_cmd_vel,x
 	
-	obj = -(x[0] - (P1 - Pc)[0])**2 - (x[1] - (P1 - Pc)[1])**2 + (x[2] - (P1 - Pc)[2])**2 - (x[0] - (P2 - Pc)[0])**2 - (x[1] - (P2 - Pc)[1])**2 + (x[2] - (P2 - Pc)[2])**2 - (x[0] - (P3 - Pc)[0])**2 - (x[1] - (P3 - Pc)[1])**2 + (x[2] - (P3 - Pc)[2])**2 - (thetac + x[3] - atan2((P1-Pc)[1],(P1-Pc)[0]))**2 - (thetac + x[3] - atan2((P2-Pc)[1],(P2-Pc)[0]))**2 - (thetac + x[3] - atan2((P3-Pc)[1],(P3-Pc)[0]))**2	# worst
-	#obj = (x[0] - (P1 - Pc)[0])**2 + (x[1] - (P1 - Pc)[1])**2 - (x[2] - (P1 - Pc)[2])**2 + (x[0] - (P2 - Pc)[0])**2 + (x[1] - (P2 - Pc)[1])**2 - (x[2] - (P2 - Pc)[2])**2 + (x[0] - (P3 - Pc)[0])**2 + (x[1] - (P3 - Pc)[1])**2 - (x[2] - (P3 - Pc)[2])**2 + (thetac + x[3] - atan2((P1-Pc)[1],(P1-Pc)[0]))**2 + (thetac + x[3] - atan2((P2-Pc)[1],(P2-Pc)[0]))**2 + (thetac + x[3] - atan2((P3-Pc)[1],(P3-Pc)[0]))**2	# optimal
+	#obj = -(x[0] - (P1 - Pc)[0])**2 - (x[1] - (P1 - Pc)[1])**2 + (x[2] - (P1 - Pc)[2])**2 - (x[0] - (P2 - Pc)[0])**2 - (x[1] - (P2 - Pc)[1])**2 + (x[2] - (P2 - Pc)[2])**2 - (x[0] - (P3 - Pc)[0])**2 - (x[1] - (P3 - Pc)[1])**2 + (x[2] - (P3 - Pc)[2])**2 + (thetac + x[3] - atan2((P1-Pc)[1],(P1-Pc)[0]))**2 + (thetac + x[3] - atan2((P2-Pc)[1],(P2-Pc)[0]))**2 + (thetac + x[3] - atan2((P3-Pc)[1],(P3-Pc)[0]))**2	# worst
+	obj = (x[0] - (P1 - Pc)[0])**2 + (x[1] - (P1 - Pc)[1])**2 - (x[2] - (P1 - Pc)[2])**2 + (x[0] - (P2 - Pc)[0])**2 + (x[1] - (P2 - Pc)[1])**2 - (x[2] - (P2 - Pc)[2])**2 + (x[0] - (P3 - Pc)[0])**2 + (x[1] - (P3 - Pc)[1])**2 - (x[2] - (P3 - Pc)[2])**2 - (thetac + x[3] - atan2((P1-Pc)[1],(P1-Pc)[0]))**2 - (thetac + x[3] - atan2((P2-Pc)[1],(P2-Pc)[0]))**2 - (thetac + x[3] - atan2((P3-Pc)[1],(P3-Pc)[0]))**2	# optimal
 	m.setObjective(obj)
 
 	m.remove(m.getConstrs())
