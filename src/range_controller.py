@@ -20,6 +20,7 @@ d_measuring = 2.2
 d_safe_uav = 1
 d_communication = 20
 m,x = None,None
+gamma = 0.5
 
 def odom(msg):
 	global P1,P2,P3,Pc,Pr,Pb,A,b,Pcen
@@ -62,7 +63,7 @@ def odom(msg):
 				  d_communication**2 - np.linalg.norm((Pr-Pb)[:2])**2, \
 				  Pr[2] - height_l, \
 				  height_u - Pr[2] \
-				  ])
+				  ])*gamma
 				  #d_measuring**2 - np.linalg.norm((Pr-P1)[:2])**2, \
 				  #d_measuring**2 - np.linalg.norm((Pr-P2)[:2])**2, \
 				  #d_measuring**2 - np.linalg.norm((Pr-P3)[:2])**2, \
@@ -83,8 +84,8 @@ def addCons(i):
 def	qpsolver():
 	global range_cmd_vel,x
 	
-	#obj = -(x[0] - (P1 - Pr)[0])**2 - (x[1] - (P1 - Pr)[1])**2 - (x[2] - (P1 - Pr)[2])**2 - (x[0] - (P2 - Pr)[0])**2 - (x[1] - (P2 - Pr)[1])**2 - (x[2] - (P2 - Pr)[2])**2 - (x[0] - (P3 - Pr)[0])**2 - (x[1] - (P3 - Pr)[1])**2 - (x[2] - (P3 - Pr)[2])**2 # worst
-	obj = (x[0] - (P1 - Pr)[0])**2 + (x[1] - (P1 - Pr)[1])**2 + (x[2] - (P1 - Pr)[2])**2 + (x[0] - (P2 - Pr)[0])**2 + (x[1] - (P2 - Pr)[1])**2 + (x[2] - (P2 - Pr)[2])**2 + (x[0] - (P3 - Pr)[0])**2 + (x[1] - (P3 - Pr)[1])**2 + (x[2] - (P3 - Pr)[2])**2 # optimal
+	obj = -(x[0] - (P1 - Pr)[0])**2 - (x[1] - (P1 - Pr)[1])**2 - (x[2] - (P1 - Pr)[2])**2 - (x[0] - (P2 - Pr)[0])**2 - (x[1] - (P2 - Pr)[1])**2 - (x[2] - (P2 - Pr)[2])**2 - (x[0] - (P3 - Pr)[0])**2 - (x[1] - (P3 - Pr)[1])**2 - (x[2] - (P3 - Pr)[2])**2 # worst
+	#obj = (x[0] - (P1 - Pr)[0])**2 + (x[1] - (P1 - Pr)[1])**2 + (x[2] - (P1 - Pr)[2])**2 + (x[0] - (P2 - Pr)[0])**2 + (x[1] - (P2 - Pr)[1])**2 + (x[2] - (P2 - Pr)[2])**2 + (x[0] - (P3 - Pr)[0])**2 + (x[1] - (P3 - Pr)[1])**2 + (x[2] - (P3 - Pr)[2])**2 # optimal
 	m.setObjective(obj)
 
 	m.remove(m.getConstrs())
