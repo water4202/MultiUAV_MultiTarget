@@ -8,7 +8,7 @@ from gazebo_msgs.msg import ModelStates
 from std_msgs.msg import Float64MultiArray
 from rosgraph_msgs.msg import Clock
 import rosbag
-bag = rosbag.Bag('worst_random.bag', 'w')
+bag = rosbag.Bag('withoutCBF_transient.bag', 'w')
 
 msgs = None
 P1,P2,P3,Pc,Pr,Pb,measurement,thetac = None,None,None,None,None,None,None,None
@@ -57,8 +57,9 @@ r_measurement[13][13] = 0.0001
 r_measurement[14][14] = 0.0001
 
 # create initial matrices
-ini = np.array([-0.6,0.2,0,0,0,0,-0.6,0.2,0,0,0,0,-0.6,0.2,0,0,0,0])
-#ini = np.array([-1.33,0,0,0,0,0,-1.33,0,0,0,0,0,-1.33,0,0,0,0,0])
+ini = np.array([0,2,0,0,0,0,0,2,0,0,0,0,2,0,0,0,0,0]) #exp
+#ini = np.array([-0.6,0.2,0,0,0,0,-0.6,0.2,0,0,0,0,-0.6,0.2,0,0,0,0]) # worst
+#ini = np.array([-1.33,0,0,0,0,0,-1.33,0,0,0,0,0,-1.33,0,0,0,0,0]) # optimal
 
 def iterate_x(x_in, timestep, inputs):
     '''this function is based on the x_dot and can be nonlinear as needed'''

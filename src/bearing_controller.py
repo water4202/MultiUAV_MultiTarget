@@ -13,10 +13,10 @@ from gurobipy import GRB
 P1,P2,P3,Pc,Pr,Pb,A,b,Pcen = None,None,None,None,None,None,None,None,None
 bearing_cmd_vel = Twist()
 sigma_u,sigma_v,sigma_ranging,sigma_bearing,sigma_alpha = 0.007,0.007,0.01,0.01,0.01
-height_l = 0.2
-height_u = 0.5
-d_safe_car = 0.7
-d_measuring = 2.2
+height_l = 0.5 #0.2 exp
+height_u = 2 #0.5
+d_safe_car = 2 #0.7
+d_measuring = 7 #2.2
 d_safe_uav = 1
 d_communication = 20
 m,x = None,None
