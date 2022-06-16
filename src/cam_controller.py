@@ -14,16 +14,16 @@ P1,P2,P3,Pc,Pr,Pb,A,b,Pcen,thetac = None,None,None,None,None,None,None,None,None
 camera_cmd_vel = Twist()
 fx,fy,lx,ly = 565.6,565.6,640,480
 sigma_u,sigma_v,sigma_ranging,sigma_bearing,sigma_alpha = 0.007,0.007,0.01,0.01,0.01
-x_fov_wealth = 8*pi/180 #3*pi/180 exp
-y_fov_wealth = 5*pi/180 #3*pi/180
-height_l = 0.5 #0.2
-height_u = 2 #0.5
-d_safe_car = 2 #0.7
-d_measuring = 7 #2.2
+x_fov_wealth = 3*pi/180 #8*pi/180 sim
+y_fov_wealth = 3*pi/180 #5*pi/180
+height_l = 0.2 #0.5
+height_u = 0.5 #2
+d_safe_car = 0.7 #2
+d_measuring = 2.2 #7
 d_safe_uav = 1
 d_communication = 20
 m,x = None,None
-gamma = 0.5
+gamma = 1
 
 def odom(msg):
 	global P1,P2,P3,Pc,Pr,Pb,A,b,Pcen,thetac
@@ -80,11 +80,11 @@ def odom(msg):
 				  atan2(lx,2*fx) - x_fov_wealth - acos(nc.dot(r1c)/np.linalg.norm(r1c[:2])), \
 				  atan2(lx,2*fx) - x_fov_wealth - acos(nc.dot(r2c)/np.linalg.norm(r2c[:2])), \
 				  atan2(lx,2*fx) - x_fov_wealth - acos(nc.dot(r3c)/np.linalg.norm(r3c[:2])), \
-				  atan2(ly,2*fy) - y_fov_wealth - atan2(abs(r1c[2]),nc.dot(r1c)), \
-				  atan2(ly,2*fy) - y_fov_wealth - atan2(abs(r2c[2]),nc.dot(r2c)), \
-				  atan2(ly,2*fy) - y_fov_wealth - atan2(abs(r3c[2]),nc.dot(r3c)), \
-				  Pc[2] - height_l, \
-				  height_u - Pc[2] \
+				  0.1*(atan2(ly,2*fy) - y_fov_wealth - atan2(abs(r1c[2]),nc.dot(r1c))), \
+				  0.1*(atan2(ly,2*fy) - y_fov_wealth - atan2(abs(r2c[2]),nc.dot(r2c))), \
+				  0.1*(atan2(ly,2*fy) - y_fov_wealth - atan2(abs(r3c[2]),nc.dot(r3c))), \
+				  0.1*(Pc[2] - height_l), \
+				  0.1*(height_u - Pc[2]) \
 				  ])*gamma
 				  #d_measuring**2 - np.linalg.norm((Pc-P1)[:2])**2, \
 				  #d_measuring**2 - np.linalg.norm((Pc-P2)[:2])**2, \
@@ -116,7 +116,11 @@ def	qpsolver():
 		addCons(i)
 
 	m.optimize()
-	#print(m.computeIIS())
+	
+	if m.status == GRB.INFEASIBLE:
+		m.feasRelaxS(1, False, False, True)
+		m.optimize()
+
 	optimal = m.getVars()
 	#print(A.dot(np.array([optimal[0].X,optimal[1].X,optimal[2].X])) - b)
 	

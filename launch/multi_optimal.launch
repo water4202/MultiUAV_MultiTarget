@@ -36,12 +36,12 @@
         <arg name="fcu_url" default="udp://:14540@localhost:14580"/>
         <!-- PX4 SITL and vehicle spawn -->
         <include file="$(find Multi-UAV-Multi-Target)/launch/single_vehicle_spawn.launch">
-            <arg name="x" value="-4.82"/>
-            <arg name="y" value="0.98"/>
+            <arg name="x" value="-3.76"/>
+            <arg name="y" value="0.89"/>
             <arg name="z" value="0"/>
             <arg name="R" value="0"/>
             <arg name="P" value="0"/>
-            <arg name="Y" value="0.0"/>
+            <arg name="Y" value="-0.1"/>
             <arg name="vehicle" value="iris_depth_camera"/>
             <arg name="mavlink_udp_port" value="14560"/>
             <arg name="mavlink_tcp_port" value="4560"/>
@@ -96,8 +96,8 @@
         <arg name="fcu_url" default="udp://:14542@localhost:14582"/>
         <!-- PX4 SITL and vehicle spawn -->
         <include file="$(find Multi-UAV-Multi-Target)/launch/single_vehicle_spawn.launch">
-            <arg name="x" value="-1.99"/>
-            <arg name="y" value="2.7"/>
+            <arg name="x" value="-2.03"/>
+            <arg name="y" value="1.96"/>
             <arg name="z" value="0"/>
             <arg name="R" value="0"/>
             <arg name="P" value="0"/>

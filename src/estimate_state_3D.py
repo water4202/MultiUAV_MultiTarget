@@ -8,7 +8,7 @@ from gazebo_msgs.msg import ModelStates
 from std_msgs.msg import Float64MultiArray
 from rosgraph_msgs.msg import Clock
 import rosbag
-bag = rosbag.Bag('withoutCBF_transient.bag', 'w')
+bag = rosbag.Bag('worst_exp.bag', 'w')
 
 msgs = None
 P1,P2,P3,Pc,Pr,Pb,measurement,thetac = None,None,None,None,None,None,None,None
@@ -57,8 +57,8 @@ r_measurement[13][13] = 0.0001
 r_measurement[14][14] = 0.0001
 
 # create initial matrices
-ini = np.array([0,2,0,0,0,0,0,2,0,0,0,0,2,0,0,0,0,0]) #exp
-#ini = np.array([-0.6,0.2,0,0,0,0,-0.6,0.2,0,0,0,0,-0.6,0.2,0,0,0,0]) # worst
+#ini = np.array([0,2,0,0,0,0,0,2,0,0,0,0,2,0,0,0,0,0]) #sim
+ini = np.array([-0.6,0.2,0,0,0,0,-0.6,0.2,0,0,0,0,-0.6,0.2,0,0,0,0]) # worst
 #ini = np.array([-1.33,0,0,0,0,0,-1.33,0,0,0,0,0,-1.33,0,0,0,0,0]) # optimal
 
 def iterate_x(x_in, timestep, inputs):
@@ -178,7 +178,7 @@ if __name__ == "__main__":
             position_covar = state_estimator.get_covar()
             position_covar = np.delete(position_covar,[3,4,5,9,10,11,15,16,17],axis=1)
             position_covar = np.delete(position_covar,[3,4,5,9,10,11,15,16,17],axis=0)
-            det_covariance.data = [np.linalg.det(position_covar),np.linalg.norm([P1[0],P1[1],P1[2]]-estimate_state[:3]),np.linalg.norm([P2[0],P2[1],P2[2]]-estimate_state[6:9]),np.linalg.norm([P3[0],P3[1],P3[2]]-estimate_state[12:15])]
+            det_covariance.data = [np.trace(position_covar),np.linalg.norm([P1[0],P1[1],P1[2]]-estimate_state[:3]),np.linalg.norm([P2[0],P2[1],P2[2]]-estimate_state[6:9]),np.linalg.norm([P3[0],P3[1],P3[2]]-estimate_state[12:15])]
             print(det_covariance.data)
             print('--')
             bag.write('det_covariance', det_covariance)

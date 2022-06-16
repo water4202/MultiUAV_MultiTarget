@@ -13,14 +13,14 @@ from gurobipy import GRB
 P1,P2,P3,Pc,Pr,Pb,A,b,Pcen = None,None,None,None,None,None,None,None,None
 range_cmd_vel = Twist()
 sigma_u,sigma_v,sigma_ranging,sigma_bearing,sigma_alpha = 0.007,0.007,0.01,0.01,0.01
-height_l = 0.5 #0.2 exp
-height_u = 2 #0.5
-d_safe_car = 2.1 #0.7
-d_measuring = 7 #2.2
+height_l = 0.2 #0.5 sim
+height_u = 0.5 #2
+d_safe_car = 0.7 #2
+d_measuring = 2.2 #7
 d_safe_uav = 1
 d_communication = 20
 m,x = None,None
-gamma = 0.5
+gamma = 1
 
 def odom(msg):
 	global P1,P2,P3,Pc,Pr,Pb,A,b,Pcen
@@ -61,8 +61,8 @@ def odom(msg):
 				  np.linalg.norm((Pr-Pb)[:2])**2 - d_safe_uav**2, \
 				  d_communication**2 - np.linalg.norm((Pr-Pc)[:2])**2, \
 				  d_communication**2 - np.linalg.norm((Pr-Pb)[:2])**2, \
-				  Pr[2] - height_l, \
-				  height_u - Pr[2] \
+				  0.1*(Pr[2] - height_l), \
+				  0.1*(height_u - Pr[2]) \
 				  ])*gamma
 				  #d_measuring**2 - np.linalg.norm((Pr-P1)[:2])**2, \
 				  #d_measuring**2 - np.linalg.norm((Pr-P2)[:2])**2, \
